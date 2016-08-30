@@ -1,30 +1,16 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
 
+/// <summary>
+/// This MonoBehaviour creates a new, seperate GameObject with a procedurally generated meshs
+/// I apologize that I've lost the references I used to create this
+/// </summary>
 public class MeshBuilder : MonoBehaviour
 {
-
-    public Material material;
+    [SerializeField]
+    private Material material;
+    [SerializeField]
     public int recursionLevel;
-
-    private struct triangle
-    {
-        public int A;
-        public int B;
-        public int C;
-
-        public triangle(int a, int b, int c)
-        {
-            this.A = a;
-            this.B = b;
-            this.C = c;
-        }
-
-        public override string ToString()
-        {
-            return string.Format("({0},{1},{2})", A, B, C);
-        }
-    }
 
     // Use this for initialization
     void Start()
@@ -38,21 +24,25 @@ public class MeshBuilder : MonoBehaviour
 
     }
 
+    /// <summary>
+    /// Create a procedurally generated GameObject from scratch
+    /// </summary>
+    /// <returns>An instantiated GameObject with a procedurally generated mesh</returns>
     private GameObject BuildGameObject()
     {
-        var planet = new GameObject("planet", typeof(MeshFilter), typeof(MeshRenderer), typeof(RotatePlanet));
+        // Create a new GameObject called GeneratedGameObject and add components we'll need
+        // Because we are creating a new object from scratch we cannot use Instantiate()
+        var go = new GameObject("GeneratedGameObject", typeof(MeshFilter), typeof(MeshRenderer), typeof(RotateGameObject));     
 
-        var meshFilter = planet.GetComponent<MeshFilter>();
-        var meshRenderer = planet.GetComponent<MeshRenderer>();
-
-
+        var meshFilter = go.GetComponent<MeshFilter>();
+        var meshRenderer = go.GetComponent<MeshRenderer>();
 
         var mesh = BuildMesh();
 
         meshFilter.mesh = mesh;
         meshRenderer.material = material;
 
-        return planet;
+        return go;
     }
 
     private Vector3 SmoothCurve(Vector3 v)
@@ -68,6 +58,12 @@ public class MeshBuilder : MonoBehaviour
         return smoothPoint;
     }
 
+    /// <summary>
+    /// Get the middle position between two points
+    /// </summary>
+    /// <param name="p1">First 3D point</param>
+    /// <param name="p2">Second 3D point</param>
+    /// <returns>Middle position between two points</returns>
     private Vector3 GetMiddlePoint(Vector3 p1, Vector3 p2)
     {
         return new Vector3((p1.x + p2.x) / 2f,
@@ -89,6 +85,10 @@ public class MeshBuilder : MonoBehaviour
         return result.ToArray();
     }
 
+    /// <summary>
+    /// Generate an icosahedron mesh
+    /// </summary>
+    /// <returns>New mesh to be added to a GameObject</returns>
     private Mesh BuildMesh()
     {
         var mesh = new Mesh();
@@ -161,77 +161,37 @@ public class MeshBuilder : MonoBehaviour
 
         for (int i = 0; i < recursionLevel; i++)
         {
-            var triangles2 = new List<triangle>();
+            var newTriangles = new List<triangle>();
 
             foreach (var face in triangles)
             {
                 var AB = GetMiddlePoint(vertices[face.A], vertices[face.B]);
                 vertices.Add(SmoothCurve(AB));
                 int ab = vertices.Count - 1;
-                //uvs.Add(new Vector2(0.5f, 1f));
 
                 var BC = GetMiddlePoint(vertices[face.B], vertices[face.C]);
                 vertices.Add(SmoothCurve(BC));
                 int bc = vertices.Count - 1;
-                //uvs.Add(new Vector2(0f, 0f));
 
                 var CA = GetMiddlePoint(vertices[face.C], vertices[face.A]);
                 vertices.Add(SmoothCurve(CA));
                 int ca = vertices.Count - 1;
-                //uvs.Add(new Vector2(1f, 1f));
 
                 var tri = new triangle(face.A, ab, ca);
-                //Debug.Log(tri);
-                triangles2.Add(tri);
+
+                newTriangles.Add(tri);
                 
-                triangles2.Add(new triangle(face.B, bc, ab));
-                triangles2.Add(new triangle(face.C, ca, bc));
-                triangles2.Add(new triangle(ab, bc, ca));
+                newTriangles.Add(new triangle(face.B, bc, ab));
+                newTriangles.Add(new triangle(face.C, ca, bc));
+                newTriangles.Add(new triangle(ab, bc, ca));
             }
 
-            triangles = triangles2.ToArray();
+            triangles = newTriangles.ToArray();
         }
-
-        //Vector2[] uvs = {
-        //    new Vector2(0, 0),
-        //    new Vector2(0, 0),
-        //    new Vector2(0, 0),
-        //    new Vector2(0, 0),
-
-        //    new Vector2(0, 0),
-        //    new Vector2(0, 0),
-        //    new Vector2(0, 0),
-        //    new Vector2(0, 0),
-
-        //    new Vector2(0, 0),
-        //    new Vector2(0, 0),
-        //    new Vector2(0, 0),
-        //    new Vector2(0, 0)
-        //};
-
-        //Vector3[] normals = {
-        //    Vector3.up,
-        //    Vector3.up,
-        //    Vector3.up,
-        //    Vector3.up,
-
-        //    Vector3.up,
-        //    Vector3.up,
-        //    Vector3.up,
-        //    Vector3.up,
-
-        //    Vector3.up,
-        //    Vector3.up,
-        //    Vector3.up,
-        //    Vector3.up
-        //};
 
         mesh.vertices = vertices.ToArray();
         mesh.triangles = ConvertToMeshFilterTriangles(triangles);
-        //mesh.uv = uvs.ToArray();
-        //mesh.normals = normals;
 
         return mesh;
     }
-
 }
