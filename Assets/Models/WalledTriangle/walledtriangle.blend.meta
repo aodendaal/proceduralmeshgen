@@ -1,6 +1,6 @@
 fileFormatVersion: 2
-guid: d35321f8c62b5a44fb8e39c2d51b37b4
-timeCreated: 1488452919
+guid: 078ef862dbf2ebd458253789310b060c
+timeCreated: 1488888343
 licenseType: Free
 ModelImporter:
   serializedVersion: 19
@@ -33,7 +33,7 @@ ModelImporter:
     animationWrapMode: 0
     extraExposedTransformPaths: []
     clipAnimations: []
-    isReadable: 0
+    isReadable: 1
   meshes:
     lODScreenPercentages: []
     globalScale: 1.15

@@ -82,11 +82,33 @@ public class PointManager : MonoBehaviour
     {
         triangles = new List<Triangle>();
 
+        // 5 faces around point 0
         triangles.Add(new Triangle("(0,11,5)", points[0], points[5], points[11]));
         triangles.Add(new Triangle("(0,5,1)", points[0], points[5], points[1]));
         triangles.Add(new Triangle("(0,1,7)", points[0], points[1], points[7]));
         triangles.Add(new Triangle("(0,7,10)", points[0], points[7], points[10]));
         triangles.Add(new Triangle("(0,10,11)", points[0], points[10], points[11]));
+
+        // 5 adjacent faces
+        triangles.Add(new Triangle("(1,5,9)", points[1], points[5], points[9]));
+        triangles.Add(new Triangle("(5,11,4)", points[5], points[11], points[4]));
+        triangles.Add(new Triangle("(11,10,2)", points[11], points[10], points[2]));
+        triangles.Add(new Triangle("(10,7,6)", points[10], points[7], points[6]));
+        triangles.Add(new Triangle("(7,1,8)", points[7], points[1], points[8]));
+
+        // 5 faces around point 3
+        triangles.Add(new Triangle("(3,9,4)", points[3], points[9], points[4]));
+        triangles.Add(new Triangle("(3,4,2)", points[3], points[4], points[2]));
+        triangles.Add(new Triangle("(3,2,6)", points[3], points[2], points[6]));
+        triangles.Add(new Triangle("(3,6,8)", points[3], points[6], points[8]));
+        triangles.Add(new Triangle("(3,8,9)", points[3], points[8], points[9]));
+
+        // 5 adjacent faces
+        triangles.Add(new Triangle("(4,9,5)", points[4], points[9], points[5]));
+        triangles.Add(new Triangle("(2,4,11)", points[2], points[4], points[11]));
+        triangles.Add(new Triangle("(6,2,10)", points[6], points[2], points[10]));
+        triangles.Add(new Triangle("(8,6,7)", points[8], points[6], points[7]));
+        triangles.Add(new Triangle("(9,8,1)", points[9], points[8], points[1]));
     }
 
     // Update is called once per frame
@@ -131,7 +153,7 @@ public class PointManager : MonoBehaviour
             var heading = center - Vector3.zero;
             var distance = heading.magnitude;
             var direction = heading / distance;
-            var tri = Instantiate(trianglePrefab, center, Quaternion.LookRotation(direction, Vector3.up));
+            var tri = Instantiate(trianglePrefab, center, Quaternion.LookRotation(direction, triangle.A - center));
             tri.name = "Triangle " + triangle.Name;
         }
     }
