@@ -38,6 +38,7 @@ public class MeshBuilder : MonoBehaviour
         var meshRenderer = go.GetComponent<MeshRenderer>();
 
         var mesh = BuildMesh();
+        mesh.RecalculateNormals();
 
         meshFilter.mesh = mesh;
         meshRenderer.material = material;
