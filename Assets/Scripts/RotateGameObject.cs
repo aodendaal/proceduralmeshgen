@@ -7,7 +7,7 @@ using System.Collections;
 public class RotateGameObject : MonoBehaviour {
 
     [SerializeField]
-    private float turnRate = 40.0f;
+    private float turnRate = 20.0f;
 
 	// Use this for initialization
 	void Start () {

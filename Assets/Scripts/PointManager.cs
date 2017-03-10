@@ -30,6 +30,9 @@ public class PointManager : MonoBehaviour
         }
     }
 
+    [Header("Prefabs")]
+    [SerializeField]
+    private GameObject parent;
     [SerializeField]
     private GameObject pointMarker;
 
@@ -50,6 +53,7 @@ public class PointManager : MonoBehaviour
     {
         BuildPoints();
         BuildTriangles();
+        PlaceTriangles_Click();
     }
 
     private void BuildPoints()
@@ -134,6 +138,7 @@ public class PointManager : MonoBehaviour
         foreach (var point in points)
         {
             var go = Instantiate(pointMarker, point, Quaternion.identity);
+            go.transform.parent = parent.transform;
             go.name = "Point " + count.ToString() + " " + point.ToString();
 
             if (count == 0 || count == 5 || count == 11)
@@ -154,7 +159,12 @@ public class PointManager : MonoBehaviour
             var distance = heading.magnitude;
             var direction = heading / distance;
             var tri = Instantiate(trianglePrefab, center, Quaternion.LookRotation(direction, triangle.A - center));
+            tri.transform.parent = parent.transform;
             tri.name = "Triangle " + triangle.Name;
+
+            tri.transform.localScale = Vector3.one * 0.9f;
+
+            LeanTween.scale(tri, Vector3.one, 2f).setEase(LeanTweenType.easeOutElastic);
         }
     }
 }
