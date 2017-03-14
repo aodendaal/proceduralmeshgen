@@ -41,11 +41,9 @@ public class PlanetManager : MonoBehaviour
 
         if (Physics.Raycast(ray, out hitInfo, 1 << 8))
         {
-            canTurn = false;
+            canTurn = false;           
 
-            var mapData = hitInfo.transform.gameObject.GetComponent<PlanetTile>().MapData;            
-
-            HighlightCircle(mapData, hitInfo.point);
+            HighlightCircle(hitInfo.point);
         }
         else
         {
@@ -57,7 +55,7 @@ public class PlanetManager : MonoBehaviour
         RotatePlanet();
     }
 
-    private void HighlightCircle(Triangle mapData, Vector3 hitPoint)
+    private void HighlightCircle(Vector3 hitPoint)
     {
         Vector3 closestPoint = Vector3.zero;
         var distance = Mathf.Infinity;
@@ -74,8 +72,6 @@ public class PlanetManager : MonoBehaviour
                 closestPoint = point;
             }
         }
-
-        Debug.Log(string.Format("Closest Point: {0} Distance: {1}", closestPoint.ToString(), distance));
 
         if (marker == null)
         {
@@ -165,8 +161,6 @@ public class PlanetManager : MonoBehaviour
             var tri = Instantiate(trianglePrefab, center, Quaternion.LookRotation(direction, triangle.A - center));
             tri.transform.parent = transform;
             tri.name = "Triangle " + triangle.Name;
-
-            tri.GetComponent<PlanetTile>().MapData = triangle;
 
             transform.localScale = Vector3.zero;
 
