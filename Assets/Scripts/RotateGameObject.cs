@@ -16,7 +16,6 @@ public class RotateGameObject : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
-        // rotate the the object around the Y-axis
-        transform.Rotate(Vector3.up, turnRate * Time.deltaTime);
+        
 	}
 }

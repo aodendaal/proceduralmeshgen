@@ -12,6 +12,25 @@ public class MeshBuilder : MonoBehaviour
     [SerializeField]
     public int recursionLevel;
 
+    private struct triangle
+    {
+        public int A;
+        public int B;
+        public int C;
+
+        public triangle(int a, int b, int c)
+        {
+            this.A = a;
+            this.B = b;
+            this.C = c;
+        }
+
+        public override string ToString()
+        {
+            return string.Format("({0},{1},{2})", A, B, C);
+        }
+    }
+
     // Use this for initialization
     void Start()
     {

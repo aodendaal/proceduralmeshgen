@@ -2,40 +2,11 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class PointManager : MonoBehaviour
+public class PlanetManager : MonoBehaviour
 {
-    private class Triangle
-    {
-        public string Name { get; set; }
-        public Vector3 A { get; set; }
-        public Vector3 B { get; set; }
-        public Vector3 C { get; set; }
-
-        public Triangle()
-        {
-
-        }
-
-        public Triangle (string name, Vector3 a, Vector3 b, Vector3 c)
-        {
-            Name = name;
-            A = a;
-            B = b;
-            C = c;
-        }
-
-        public Vector3 GetCenter()
-        {
-            return new Vector3((A.x + B.x + C.x) / 3f, (A.y + B.y + C.y) / 3f, (A.z + B.z + C.z) / 3f);
-        }
-    }
-
     [Header("Prefabs")]
     [SerializeField]
-    private GameObject parent;
-    [SerializeField]
     private GameObject pointMarker;
-
     [SerializeField]
     public GameObject trianglePrefab;
 
@@ -48,12 +19,79 @@ public class PointManager : MonoBehaviour
     private List<Vector3> points;
     private List<Triangle> triangles;
 
+    private GameObject marker = null;
+
+    private bool canTurn = true;
+    private float turnRate = 40f;
+
     // Use this for initialization
     private void Start()
     {
         BuildPoints();
         BuildTriangles();
         PlaceTriangles_Click();
+    }
+
+    // Update is called once per frame
+    private void Update()
+    {
+        var ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+
+        RaycastHit hitInfo;
+
+        if (Physics.Raycast(ray, out hitInfo, 1 << 8))
+        {
+            canTurn = false;
+
+            var mapData = hitInfo.transform.gameObject.GetComponent<PlanetTile>().MapData;            
+
+            HighlightCircle(mapData, hitInfo.point);
+        }
+        else
+        {
+            DestroyImmediate(marker);
+            marker = null;
+            canTurn = true;
+        }
+
+        RotatePlanet();
+    }
+
+    private void HighlightCircle(Triangle mapData, Vector3 hitPoint)
+    {
+        Vector3 closestPoint = Vector3.zero;
+        var distance = Mathf.Infinity;
+
+        foreach (Vector3 point in points)
+        {
+            var adjusted = transform.TransformPoint(point);
+
+            var pointDistance = Vector3.Distance(hitPoint, adjusted);
+
+            if (pointDistance < distance)
+            {
+                distance = pointDistance;
+                closestPoint = point;
+            }
+        }
+
+        Debug.Log(string.Format("Closest Point: {0} Distance: {1}", closestPoint.ToString(), distance));
+
+        if (marker == null)
+        {
+            marker = Instantiate(pointMarker, transform.TransformPoint(closestPoint), Quaternion.identity);
+        }
+
+        marker.transform.position = transform.TransformPoint(closestPoint);
+    }
+
+    private void RotatePlanet()
+    {
+        if (canTurn)
+        {
+            // rotate the the object around the Y-axis
+            transform.Rotate(Vector3.up, turnRate * Time.deltaTime);
+        }
     }
 
     private void BuildPoints()
@@ -115,56 +153,24 @@ public class PointManager : MonoBehaviour
         triangles.Add(new Triangle("(9,8,1)", points[9], points[8], points[1]));
     }
 
-    // Update is called once per frame
-    private void Update()
-    {
-    }
-
-    private void OnDrawGizmos()
-    {
-        if (points == null || points.Count == 0)
-            return;
-
-        Gizmos.color = Color.blue;
-
-        Gizmos.DrawLine(points[0], points[5]);
-        Gizmos.DrawLine(points[5], points[11]);
-        Gizmos.DrawLine(points[11], points[0]);
-    }
-
-    public void PlacePointMarkers_Click()
-    {
-        var count = 0;
-        foreach (var point in points)
-        {
-            var go = Instantiate(pointMarker, point, Quaternion.identity);
-            go.transform.parent = parent.transform;
-            go.name = "Point " + count.ToString() + " " + point.ToString();
-
-            if (count == 0 || count == 5 || count == 11)
-            {
-                go.GetComponent<Renderer>().material = highlightMaterial;
-            }
-            count++;
-        }
-    }
-
     public void PlaceTriangles_Click()
     {
-
         foreach (var triangle in triangles)
         {
             var center = triangle.GetCenter();            
             var heading = center - Vector3.zero;
             var distance = heading.magnitude;
             var direction = heading / distance;
+
             var tri = Instantiate(trianglePrefab, center, Quaternion.LookRotation(direction, triangle.A - center));
-            tri.transform.parent = parent.transform;
+            tri.transform.parent = transform;
             tri.name = "Triangle " + triangle.Name;
 
-            tri.transform.localScale = Vector3.one * 0.9f;
+            tri.GetComponent<PlanetTile>().MapData = triangle;
 
-            LeanTween.scale(tri, Vector3.one, 2f).setEase(LeanTweenType.easeOutElastic);
+            transform.localScale = Vector3.zero;
+
+            LeanTween.scale(gameObject, Vector3.one, 2f).setEase(LeanTweenType.easeOutBounce).setDelay(0.5f);
         }
     }
 }
