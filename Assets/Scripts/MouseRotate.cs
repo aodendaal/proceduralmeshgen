@@ -46,5 +46,10 @@ public class MouseRotate : MonoBehaviour
             transform.RotateAround(Vector3.zero, Vector3.right, yDistance * Time.deltaTime);
 
         }
+
+        if (Input.GetAxis("Mouse ScrollWheel") != 0)
+        {
+            transform.position += transform.forward * Mathf.Sign(Input.GetAxis("Mouse ScrollWheel"));
+        }
     }
 }

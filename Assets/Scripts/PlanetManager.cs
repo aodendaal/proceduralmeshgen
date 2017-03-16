@@ -8,13 +8,18 @@ public class PlanetManager : MonoBehaviour
     [SerializeField]
     private GameObject pointMarker;
     [SerializeField]
-    public GameObject trianglePrefab;
+    private GameObject trianglePrefab;
 
     [Header("Materials")]
     [SerializeField]
-    public Material highlightMaterial;
+    private Material highlightMaterial;
     [SerializeField]
-    public Material centerMaterial;
+    private Material centerMaterial;
+
+    [Header("Planet Details")]
+    [SerializeField]
+    [Range(1,3)]
+    private int size;
 
     private List<Vector3> points;
     private List<Triangle> triangles;
@@ -27,7 +32,7 @@ public class PlanetManager : MonoBehaviour
     // Use this for initialization
     private void Start()
     {
-        BuildPoints();
+        BuildInitialPoints();
         BuildTriangles();
         PlaceTriangles_Click();
     }
@@ -73,12 +78,18 @@ public class PlanetManager : MonoBehaviour
             }
         }
 
+        var heading = transform.TransformPoint(closestPoint) - transform.position;
+        var dist = heading.sqrMagnitude;
+        var direction = heading / dist;
+
+
         if (marker == null)
         {
-            marker = Instantiate(pointMarker, transform.TransformPoint(closestPoint), Quaternion.identity);
+            marker = Instantiate(pointMarker, transform.TransformPoint(closestPoint), Quaternion.Euler(direction));
         }
 
         marker.transform.position = transform.TransformPoint(closestPoint);
+        marker.transform.rotation = Quaternion.LookRotation(heading);
     }
 
     private void RotatePlanet()
@@ -90,7 +101,9 @@ public class PlanetManager : MonoBehaviour
         }
     }
 
-    private void BuildPoints()
+    #region Build
+
+    private void BuildInitialPoints()
     {
         points = new List<Vector3>();
 
@@ -98,22 +111,22 @@ public class PlanetManager : MonoBehaviour
         var t = (1.0f + Mathf.Sqrt(5.0f)) / 2.0f;
 
         // Y rectangle
-        points.Add(new Vector3(-1, t, 0));
-        points.Add(new Vector3(1, t, 0));
-        points.Add(new Vector3(-1, -t, 0));
-        points.Add(new Vector3(1, -t, 0));
+        points.Add(new Vector3(-1f, t, 0f) * size);
+        points.Add(new Vector3(1f, t, 0f) * size);
+        points.Add(new Vector3(-1f, -t, 0f) * size);
+        points.Add(new Vector3(1f, -t, 0f) * size);
 
-        // Z rectangle
-        points.Add(new Vector3(0, -1, t));
-        points.Add(new Vector3(0, 1, t));
-        points.Add(new Vector3(0, -1, -t));
-        points.Add(new Vector3(0, 1, -t));
+        // Z rectan
+        points.Add(new Vector3(0f, -1f, t) * size);
+        points.Add(new Vector3(0f, 1f, t) * size);
+        points.Add(new Vector3(0f, -1f, -t) * size);
+        points.Add(new Vector3(0f, 1f, -t) * size);
 
-        // X rectangle
-        points.Add(new Vector3(t, 0, -1));
-        points.Add(new Vector3(t, 0, 1));
-        points.Add(new Vector3(-t, 0, -1));
-        points.Add(new Vector3(-t, 0, 1));
+        // X rectan
+        points.Add(new Vector3(t, 0f, -1f) * size);
+        points.Add(new Vector3(t, 0f, 1f) * size);
+        points.Add(new Vector3(-t, 0f, -1f) * size);
+        points.Add(new Vector3(-t, 0f, 1f) * size);
     }
 
     private void BuildTriangles()
@@ -121,42 +134,95 @@ public class PlanetManager : MonoBehaviour
         triangles = new List<Triangle>();
 
         // 5 faces around point 0
-        triangles.Add(new Triangle("(0,11,5)", points[0], points[5], points[11]));
-        triangles.Add(new Triangle("(0,5,1)", points[0], points[5], points[1]));
-        triangles.Add(new Triangle("(0,1,7)", points[0], points[1], points[7]));
-        triangles.Add(new Triangle("(0,7,10)", points[0], points[7], points[10]));
-        triangles.Add(new Triangle("(0,10,11)", points[0], points[10], points[11]));
+        triangles.Add(new Triangle("(0,5,11)", points[0], points[5], points[11]));
+        triangles.Add(new Triangle(points[0], points[5], points[1]));
+        triangles.Add(new Triangle(points[0], points[1], points[7]));
+        triangles.Add(new Triangle(points[0], points[7], points[10]));
+        triangles.Add(new Triangle(points[0], points[10], points[11]));
 
         // 5 adjacent faces
-        triangles.Add(new Triangle("(1,5,9)", points[1], points[5], points[9]));
-        triangles.Add(new Triangle("(5,11,4)", points[5], points[11], points[4]));
-        triangles.Add(new Triangle("(11,10,2)", points[11], points[10], points[2]));
-        triangles.Add(new Triangle("(10,7,6)", points[10], points[7], points[6]));
-        triangles.Add(new Triangle("(7,1,8)", points[7], points[1], points[8]));
+        triangles.Add(new Triangle(points[1], points[5], points[9]));
+        triangles.Add(new Triangle(points[5], points[11], points[4]));
+        triangles.Add(new Triangle(points[11], points[10], points[2]));
+        triangles.Add(new Triangle(points[10], points[7], points[6]));
+        triangles.Add(new Triangle(points[7], points[1], points[8]));
 
         // 5 faces around point 3
-        triangles.Add(new Triangle("(3,9,4)", points[3], points[9], points[4]));
-        triangles.Add(new Triangle("(3,4,2)", points[3], points[4], points[2]));
-        triangles.Add(new Triangle("(3,2,6)", points[3], points[2], points[6]));
-        triangles.Add(new Triangle("(3,6,8)", points[3], points[6], points[8]));
-        triangles.Add(new Triangle("(3,8,9)", points[3], points[8], points[9]));
+        triangles.Add(new Triangle(points[3], points[9], points[4]));
+        triangles.Add(new Triangle(points[3], points[4], points[2]));
+        triangles.Add(new Triangle(points[3], points[2], points[6]));
+        triangles.Add(new Triangle(points[3], points[6], points[8]));
+        triangles.Add(new Triangle(points[3], points[8], points[9]));
 
         // 5 adjacent faces
-        triangles.Add(new Triangle("(4,9,5)", points[4], points[9], points[5]));
-        triangles.Add(new Triangle("(2,4,11)", points[2], points[4], points[11]));
-        triangles.Add(new Triangle("(6,2,10)", points[6], points[2], points[10]));
-        triangles.Add(new Triangle("(8,6,7)", points[8], points[6], points[7]));
-        triangles.Add(new Triangle("(9,8,1)", points[9], points[8], points[1]));
+        triangles.Add(new Triangle(points[4], points[9], points[5]));
+        triangles.Add(new Triangle(points[2], points[4], points[11]));
+        triangles.Add(new Triangle(points[6], points[2], points[10]));
+        triangles.Add(new Triangle(points[8], points[6], points[7]));
+        triangles.Add(new Triangle(points[9], points[8], points[1]));
+
+
+        var triangleCount = -1;
+
+        for (var recursion = 1; recursion < size; recursion++)
+        {
+            var newTriangles = new List<Triangle>();
+
+            foreach (Triangle oldTriangle in triangles)
+            {
+                var a = new Vector3(oldTriangle.A.x, oldTriangle.A.y, oldTriangle.A.z);
+                var b = new Vector3(oldTriangle.B.x, oldTriangle.B.y, oldTriangle.B.z);
+                var c = new Vector3(oldTriangle.C.x, oldTriangle.C.y, oldTriangle.C.z);
+
+                var AB = Subdivide(a, b);
+                var BC = Subdivide(b, c);
+                var CA = Subdivide(c, a);
+
+                points.Add(AB);
+                points.Add(BC);
+                points.Add(CA);
+
+                newTriangles.Add(new Triangle((triangleCount++).ToString(), a, AB, CA));
+                newTriangles.Add(new Triangle((triangleCount++).ToString(), b, BC, AB));
+                newTriangles.Add(new Triangle((triangleCount++).ToString(), c, CA, BC));
+                newTriangles.Add(new Triangle((triangleCount++).ToString(), AB, BC, CA));
+            }
+
+            triangles = newTriangles;
+        }
+    }
+
+    private Vector3 Subdivide(Vector3 a, Vector3 b)
+    {
+        // Find mid-point
+        var p = new Vector3((a.x + b.x) / 2f,
+                            (a.y + b.y) / 2f,
+                            (a.z + b.z) / 2f);
+
+        // Align to sphere
+        //var v = SmoothCurve(p);
+
+        return p;
+    }
+
+    private Vector3 SmoothCurve(Vector3 p)
+    {
+        var length = Mathf.Sqrt((p.x * p.x) + (p.y * p.y) + (p.z * p.z));
+
+        var v = new Vector3(p.x / length, p.y / length, p.z / length);
+
+        return v;
     }
 
     public void PlaceTriangles_Click()
     {
         foreach (var triangle in triangles)
         {
-            var center = triangle.GetCenter();            
+            var center = triangle.GetCenter();   
+            
             var heading = center - Vector3.zero;
             var distance = heading.magnitude;
-            var direction = heading / distance;
+            var direction = heading.normalized;
 
             var tri = Instantiate(trianglePrefab, center, Quaternion.LookRotation(direction, triangle.A - center));
             tri.transform.parent = transform;
@@ -167,4 +233,6 @@ public class PlanetManager : MonoBehaviour
             LeanTween.scale(gameObject, Vector3.one, 2f).setEase(LeanTweenType.easeOutBounce).setDelay(0.5f);
         }
     }
+
+    #endregion
 }

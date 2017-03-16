@@ -16,7 +16,7 @@ public class Triangle
 
     public Triangle(Vector3 a, Vector3 b, Vector3 c)
     {
-        Name = string.Format("({0},{1},{2})", A, B, C);
+        Name = string.Format("({0},{1},{2})", a, b, c);
         A = a;
         B = b;
         C = c;
@@ -32,7 +32,9 @@ public class Triangle
 
     public Vector3 GetCenter()
     {
-        return new Vector3((A.x + B.x + C.x) / 3f, (A.y + B.y + C.y) / 3f, (A.z + B.z + C.z) / 3f);
+        return new Vector3((A.x + B.x + C.x) / 3f, 
+                           (A.y + B.y + C.y) / 3f, 
+                           (A.z + B.z + C.z) / 3f);
     }
 
     public override string ToString()
