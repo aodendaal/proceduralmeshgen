@@ -76,6 +76,9 @@ public class MeshBuilder : MonoBehaviour
         var smoothPoint = new Vector3(x / length, y / length, z / length);
 
         return smoothPoint;
+
+        // HACK Remove smoothing curve
+        //return new Vector3(x, y, z);
     }
 
     /// <summary>

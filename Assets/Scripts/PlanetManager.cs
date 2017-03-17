@@ -9,6 +9,8 @@ public class PlanetManager : MonoBehaviour
     private GameObject pointMarker;
     [SerializeField]
     private GameObject trianglePrefab;
+    [SerializeField]
+    private GameObject pointPrefab;
 
     [Header("Materials")]
     [SerializeField]
@@ -18,8 +20,9 @@ public class PlanetManager : MonoBehaviour
 
     [Header("Planet Details")]
     [SerializeField]
-    [Range(1,3)]
-    private int size;
+    [Range(0,2)]
+    private int recursion;
+    private int size = 3;
 
     private List<Vector3> points;
     private List<Triangle> triangles;
@@ -35,6 +38,10 @@ public class PlanetManager : MonoBehaviour
         BuildInitialPoints();
         BuildTriangles();
         PlaceTriangles_Click();
+        PlacePoints();
+
+        transform.localScale = Vector3.zero;
+        LeanTween.scale(gameObject, Vector3.one, 2f).setEase(LeanTweenType.easeOutBounce).setDelay(0.5f);
     }
 
     // Update is called once per frame
@@ -111,22 +118,22 @@ public class PlanetManager : MonoBehaviour
         var t = (1.0f + Mathf.Sqrt(5.0f)) / 2.0f;
 
         // Y rectangle
-        points.Add(new Vector3(-1f, t, 0f) * size);
-        points.Add(new Vector3(1f, t, 0f) * size);
-        points.Add(new Vector3(-1f, -t, 0f) * size);
-        points.Add(new Vector3(1f, -t, 0f) * size);
+        points.Add(SmoothCurve(new Vector3(-1f, t, 0f)) * Mathf.Clamp(Mathf.Pow(size, recursion), 2, Mathf.Infinity));
+        points.Add(SmoothCurve(new Vector3(1f, t, 0f)) * Mathf.Clamp(Mathf.Pow(size, recursion), 2, Mathf.Infinity));
+        points.Add(SmoothCurve(new Vector3(-1f, -t, 0f)) * Mathf.Clamp(Mathf.Pow(size, recursion), 2, Mathf.Infinity));
+        points.Add(SmoothCurve(new Vector3(1f, -t, 0f)) * Mathf.Clamp(Mathf.Pow(size, recursion), 2, Mathf.Infinity));
 
         // Z rectan
-        points.Add(new Vector3(0f, -1f, t) * size);
-        points.Add(new Vector3(0f, 1f, t) * size);
-        points.Add(new Vector3(0f, -1f, -t) * size);
-        points.Add(new Vector3(0f, 1f, -t) * size);
+        points.Add(SmoothCurve(new Vector3(0f, -1f, t)) * Mathf.Clamp(Mathf.Pow(size, recursion), 2, Mathf.Infinity));
+        points.Add(SmoothCurve(new Vector3(0f, 1f, t)) * Mathf.Clamp(Mathf.Pow(size, recursion), 2, Mathf.Infinity));
+        points.Add(SmoothCurve(new Vector3(0f, -1f, -t)) * Mathf.Clamp(Mathf.Pow(size, recursion), 2, Mathf.Infinity));
+        points.Add(SmoothCurve(new Vector3(0f, 1f, -t)) * Mathf.Clamp(Mathf.Pow(size, recursion), 2, Mathf.Infinity));
 
         // X rectan
-        points.Add(new Vector3(t, 0f, -1f) * size);
-        points.Add(new Vector3(t, 0f, 1f) * size);
-        points.Add(new Vector3(-t, 0f, -1f) * size);
-        points.Add(new Vector3(-t, 0f, 1f) * size);
+        points.Add(SmoothCurve(new Vector3(t, 0f, -1f)) * Mathf.Clamp(Mathf.Pow(size, recursion), 2, Mathf.Infinity));
+        points.Add(SmoothCurve(new Vector3(t, 0f, 1f)) * Mathf.Clamp(Mathf.Pow(size, recursion), 2, Mathf.Infinity));
+        points.Add(SmoothCurve(new Vector3(-t, 0f, -1f)) * Mathf.Clamp(Mathf.Pow(size, recursion), 2, Mathf.Infinity));
+        points.Add(SmoothCurve(new Vector3(-t, 0f, 1f)) * Mathf.Clamp(Mathf.Pow(size, recursion), 2, Mathf.Infinity));
     }
 
     private void BuildTriangles()
@@ -162,9 +169,9 @@ public class PlanetManager : MonoBehaviour
         triangles.Add(new Triangle(points[9], points[8], points[1]));
 
 
-        var triangleCount = -1;
+        var triangleCount = 0;
 
-        for (var recursion = 1; recursion < size; recursion++)
+        for (var index = 0; index < recursion; index++)
         {
             var newTriangles = new List<Triangle>();
 
@@ -200,9 +207,9 @@ public class PlanetManager : MonoBehaviour
                             (a.z + b.z) / 2f);
 
         // Align to sphere
-        //var v = SmoothCurve(p);
+        var v = SmoothCurve(p) * Mathf.Clamp(Mathf.Pow(size, recursion), 2, Mathf.Infinity);
 
-        return p;
+        return v;
     }
 
     private Vector3 SmoothCurve(Vector3 p)
@@ -227,10 +234,16 @@ public class PlanetManager : MonoBehaviour
             var tri = Instantiate(trianglePrefab, center, Quaternion.LookRotation(direction, triangle.A - center));
             tri.transform.parent = transform;
             tri.name = "Triangle " + triangle.Name;
+        }        
+    }
 
-            transform.localScale = Vector3.zero;
-
-            LeanTween.scale(gameObject, Vector3.one, 2f).setEase(LeanTweenType.easeOutBounce).setDelay(0.5f);
+    private void PlacePoints()
+    {
+        foreach (Vector3 point in points)
+        {
+            var go = Instantiate(pointPrefab, point, Quaternion.identity);
+            go.name = point.ToString();
+            go.transform.parent = transform;
         }
     }
 
