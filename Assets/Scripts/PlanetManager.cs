@@ -118,22 +118,22 @@ public class PlanetManager : MonoBehaviour
         var t = (1.0f + Mathf.Sqrt(5.0f)) / 2.0f;
 
         // Y rectangle
-        points.Add(SmoothCurve(new Vector3(-1f, t, 0f)) * Mathf.Clamp(Mathf.Pow(size, recursion), 2, Mathf.Infinity));
-        points.Add(SmoothCurve(new Vector3(1f, t, 0f)) * Mathf.Clamp(Mathf.Pow(size, recursion), 2, Mathf.Infinity));
-        points.Add(SmoothCurve(new Vector3(-1f, -t, 0f)) * Mathf.Clamp(Mathf.Pow(size, recursion), 2, Mathf.Infinity));
-        points.Add(SmoothCurve(new Vector3(1f, -t, 0f)) * Mathf.Clamp(Mathf.Pow(size, recursion), 2, Mathf.Infinity));
+        points.Add(new Vector3(-1f, t, 0f).normalized * Scale());
+        points.Add(new Vector3(1f, t, 0f).normalized * Scale());
+        points.Add(new Vector3(-1f, -t, 0f).normalized * Scale());
+        points.Add(new Vector3(1f, -t, 0f).normalized * Scale());
 
         // Z rectan
-        points.Add(SmoothCurve(new Vector3(0f, -1f, t)) * Mathf.Clamp(Mathf.Pow(size, recursion), 2, Mathf.Infinity));
-        points.Add(SmoothCurve(new Vector3(0f, 1f, t)) * Mathf.Clamp(Mathf.Pow(size, recursion), 2, Mathf.Infinity));
-        points.Add(SmoothCurve(new Vector3(0f, -1f, -t)) * Mathf.Clamp(Mathf.Pow(size, recursion), 2, Mathf.Infinity));
-        points.Add(SmoothCurve(new Vector3(0f, 1f, -t)) * Mathf.Clamp(Mathf.Pow(size, recursion), 2, Mathf.Infinity));
+        points.Add(new Vector3(0f, -1f, t).normalized * Scale());
+        points.Add(new Vector3(0f, 1f, t).normalized * Scale());
+        points.Add(new Vector3(0f, -1f, -t).normalized * Scale());
+        points.Add(new Vector3(0f, 1f, -t).normalized * Scale());
 
         // X rectan
-        points.Add(SmoothCurve(new Vector3(t, 0f, -1f)) * Mathf.Clamp(Mathf.Pow(size, recursion), 2, Mathf.Infinity));
-        points.Add(SmoothCurve(new Vector3(t, 0f, 1f)) * Mathf.Clamp(Mathf.Pow(size, recursion), 2, Mathf.Infinity));
-        points.Add(SmoothCurve(new Vector3(-t, 0f, -1f)) * Mathf.Clamp(Mathf.Pow(size, recursion), 2, Mathf.Infinity));
-        points.Add(SmoothCurve(new Vector3(-t, 0f, 1f)) * Mathf.Clamp(Mathf.Pow(size, recursion), 2, Mathf.Infinity));
+        points.Add(new Vector3(t, 0f, -1f).normalized * Scale());
+        points.Add(new Vector3(t, 0f, 1f).normalized * Scale());
+        points.Add(new Vector3(-t, 0f, -1f).normalized * Scale());
+        points.Add(new Vector3(-t, 0f, 1f).normalized * Scale());
     }
 
     private void BuildTriangles()
@@ -185,9 +185,20 @@ public class PlanetManager : MonoBehaviour
                 var BC = Subdivide(b, c);
                 var CA = Subdivide(c, a);
 
-                points.Add(AB);
-                points.Add(BC);
-                points.Add(CA);
+                if (!points.Contains(AB))
+                {
+                    points.Add(AB);
+                }
+
+                if (!points.Contains(BC))
+                {
+                    points.Add(BC);
+                }
+
+                if (!points.Contains(CA))
+                {
+                    points.Add(CA);
+                }
 
                 newTriangles.Add(new Triangle((triangleCount++).ToString(), a, AB, CA));
                 newTriangles.Add(new Triangle((triangleCount++).ToString(), b, BC, AB));
@@ -207,18 +218,14 @@ public class PlanetManager : MonoBehaviour
                             (a.z + b.z) / 2f);
 
         // Align to sphere
-        var v = SmoothCurve(p) * Mathf.Clamp(Mathf.Pow(size, recursion), 2, Mathf.Infinity);
+        var v = p.normalized * Scale();
 
         return v;
     }
 
-    private Vector3 SmoothCurve(Vector3 p)
+    private float Scale()
     {
-        var length = Mathf.Sqrt((p.x * p.x) + (p.y * p.y) + (p.z * p.z));
-
-        var v = new Vector3(p.x / length, p.y / length, p.z / length);
-
-        return v;
+        return Mathf.Clamp(Mathf.Pow(size, recursion), 2, Mathf.Infinity);
     }
 
     public void PlaceTriangles_Click()

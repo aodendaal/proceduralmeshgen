@@ -1,10 +1,8 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
 
-/// <summary>
-/// This MonoBehaviour creates a new, seperate GameObject with a procedurally generated meshs
-/// I apologize that I've lost the references I used to create this
-/// </summary>
+// Learned from IcoSphere
+// http://wiki.unity3d.com/index.php/ProceduralPrimitives#C.23_-_IcoSphere
 public class MeshBuilder : MonoBehaviour
 {
     [SerializeField]
@@ -42,15 +40,9 @@ public class MeshBuilder : MonoBehaviour
     {
 
     }
-
-    /// <summary>
-    /// Create a procedurally generated GameObject from scratch
-    /// </summary>
-    /// <returns>An instantiated GameObject with a procedurally generated mesh</returns>
+    
     private GameObject BuildGameObject()
     {
-        // Create a new GameObject called GeneratedGameObject and add components we'll need
-        // Because we are creating a new object from scratch we cannot use Instantiate()
         var go = new GameObject("GeneratedGameObject", typeof(MeshFilter), typeof(MeshRenderer), typeof(RotateGameObject));     
 
         var meshFilter = go.GetComponent<MeshFilter>();
