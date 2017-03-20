@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 public class PlanetManager : MonoBehaviour
@@ -7,22 +6,24 @@ public class PlanetManager : MonoBehaviour
     [Header("Prefabs")]
     [SerializeField]
     private GameObject pointMarker;
+
     [SerializeField]
     private GameObject trianglePrefab;
+
     [SerializeField]
     private GameObject pointPrefab;
 
     [Header("Materials")]
     [SerializeField]
     private Material highlightMaterial;
+
     [SerializeField]
     private Material centerMaterial;
 
     [Header("Planet Details")]
     [SerializeField]
-    [Range(0,2)]
+    [Range(0, 2)]
     private int recursion;
-    private int size = 3;
 
     private List<Vector3> points;
     private List<Triangle> triangles;
@@ -53,7 +54,7 @@ public class PlanetManager : MonoBehaviour
 
         if (Physics.Raycast(ray, out hitInfo, 1 << 8))
         {
-            canTurn = false;           
+            canTurn = false;
 
             HighlightCircle(hitInfo.point);
         }
@@ -89,7 +90,6 @@ public class PlanetManager : MonoBehaviour
         var dist = heading.sqrMagnitude;
         var direction = heading / dist;
 
-
         if (marker == null)
         {
             marker = Instantiate(pointMarker, transform.TransformPoint(closestPoint), Quaternion.Euler(direction));
@@ -118,22 +118,22 @@ public class PlanetManager : MonoBehaviour
         var t = (1.0f + Mathf.Sqrt(5.0f)) / 2.0f;
 
         // Y rectangle
-        points.Add(new Vector3(-1f, t, 0f).normalized * Scale());
-        points.Add(new Vector3(1f, t, 0f).normalized * Scale());
-        points.Add(new Vector3(-1f, -t, 0f).normalized * Scale());
-        points.Add(new Vector3(1f, -t, 0f).normalized * Scale());
+        points.Add(Normalize(new Vector3(-1f, t, 0f)) * Scale());
+        points.Add(Normalize(new Vector3(1f, t, 0f)) * Scale());
+        points.Add(Normalize(new Vector3(-1f, -t, 0f)) * Scale());
+        points.Add(Normalize(new Vector3(1f, -t, 0f)) * Scale());
 
         // Z rectan
-        points.Add(new Vector3(0f, -1f, t).normalized * Scale());
-        points.Add(new Vector3(0f, 1f, t).normalized * Scale());
-        points.Add(new Vector3(0f, -1f, -t).normalized * Scale());
-        points.Add(new Vector3(0f, 1f, -t).normalized * Scale());
+        points.Add(Normalize(new Vector3(0f, -1f, t)) * Scale());
+        points.Add(Normalize(new Vector3(0f, 1f, t)) * Scale());
+        points.Add(Normalize(new Vector3(0f, -1f, -t)) * Scale());
+        points.Add(Normalize(new Vector3(0f, 1f, -t)) * Scale());
 
         // X rectan
-        points.Add(new Vector3(t, 0f, -1f).normalized * Scale());
-        points.Add(new Vector3(t, 0f, 1f).normalized * Scale());
-        points.Add(new Vector3(-t, 0f, -1f).normalized * Scale());
-        points.Add(new Vector3(-t, 0f, 1f).normalized * Scale());
+        points.Add(Normalize(new Vector3(t, 0f, -1f)) * Scale());
+        points.Add(Normalize(new Vector3(t, 0f, 1f)) * Scale());
+        points.Add(Normalize(new Vector3(-t, 0f, -1f)) * Scale());
+        points.Add(Normalize(new Vector3(-t, 0f, 1f)) * Scale());
     }
 
     private void BuildTriangles()
@@ -141,7 +141,7 @@ public class PlanetManager : MonoBehaviour
         triangles = new List<Triangle>();
 
         // 5 faces around point 0
-        triangles.Add(new Triangle("(0,5,11)", points[0], points[5], points[11]));
+        triangles.Add(new Triangle(points[0], points[11], points[5]));
         triangles.Add(new Triangle(points[0], points[5], points[1]));
         triangles.Add(new Triangle(points[0], points[1], points[7]));
         triangles.Add(new Triangle(points[0], points[7], points[10]));
@@ -167,7 +167,6 @@ public class PlanetManager : MonoBehaviour
         triangles.Add(new Triangle(points[6], points[2], points[10]));
         triangles.Add(new Triangle(points[8], points[6], points[7]));
         triangles.Add(new Triangle(points[9], points[8], points[1]));
-
 
         var triangleCount = 0;
 
@@ -200,10 +199,10 @@ public class PlanetManager : MonoBehaviour
                     points.Add(CA);
                 }
 
-                newTriangles.Add(new Triangle((triangleCount++).ToString(), a, AB, CA));
-                newTriangles.Add(new Triangle((triangleCount++).ToString(), b, BC, AB));
-                newTriangles.Add(new Triangle((triangleCount++).ToString(), c, CA, BC));
-                newTriangles.Add(new Triangle((triangleCount++).ToString(), AB, BC, CA));
+                newTriangles.Add(new Triangle((triangleCount++).ToString(), a, CA, AB));
+                newTriangles.Add(new Triangle((triangleCount++).ToString(), b, AB, BC));
+                newTriangles.Add(new Triangle((triangleCount++).ToString(), c, BC, CA));
+                newTriangles.Add(new Triangle((triangleCount++).ToString(), BC, AB, CA));
             }
 
             triangles = newTriangles;
@@ -218,30 +217,41 @@ public class PlanetManager : MonoBehaviour
                             (a.z + b.z) / 2f);
 
         // Align to sphere
-        var v = p.normalized * Scale();
+        var v = Normalize(p) * (Scale() * 1f);
 
         return v;
     }
 
+    private Vector3 Normalize(Vector3 p)
+    {
+        //return p;
+        return p.normalized;
+    }
+
     private float Scale()
     {
-        return Mathf.Clamp(Mathf.Pow(size, recursion), 2, Mathf.Infinity);
+        switch (recursion)
+        {
+            case 0: return 1.65f; break;
+            case 1: return 3.5f; break;
+            case 2: return 7f; break;
+            default: return 1f; break;
+        }
     }
 
     public void PlaceTriangles_Click()
     {
         foreach (var triangle in triangles)
         {
-            var center = triangle.GetCenter();   
-            
-            var heading = center - Vector3.zero;
-            var distance = heading.magnitude;
-            var direction = heading.normalized;
+            var center = triangle.GetCenter();
+            var side1 = triangle.B - triangle.A;
+            var side2 = triangle.C - triangle.A;
+            var cross = Vector3.Cross(side1, side2);
 
-            var tri = Instantiate(trianglePrefab, center, Quaternion.LookRotation(direction, triangle.A - center));
+            var tri = Instantiate(trianglePrefab, center, Quaternion.LookRotation(cross * ((recursion % 2 == 0) ? 1f : -1f), triangle.A));
             tri.transform.parent = transform;
             tri.name = "Triangle " + triangle.Name;
-        }        
+        }
     }
 
     private void PlacePoints()
@@ -254,5 +264,5 @@ public class PlanetManager : MonoBehaviour
         }
     }
 
-    #endregion
+    #endregion Build
 }
