@@ -1,4 +1,6 @@
-﻿Shader "Custom/Planet"
+﻿// Upgrade NOTE: replaced 'mul(UNITY_MATRIX_MVP,*)' with 'UnityObjectToClipPos(*)'
+
+Shader "Custom/Planet"
 {
     Properties
     {
@@ -51,7 +53,7 @@
                     v2f o;
 	    	 
                     v.vertex.xyz += v.normal*_Size;
-                    o.pos = mul(UNITY_MATRIX_MVP, v.vertex);
+                    o.pos = UnityObjectToClipPos(v.vertex);
                     o.normal = mul((float3x3)unity_ObjectToWorld, v.normal);
                     o.worldvertpos = mul(unity_ObjectToWorld, v.vertex);
 	    	 

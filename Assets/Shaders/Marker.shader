@@ -1,4 +1,6 @@
-﻿Shader "Custom/Marker" {
+﻿// Upgrade NOTE: replaced 'mul(UNITY_MATRIX_MVP,*)' with 'UnityObjectToClipPos(*)'
+
+Shader "Custom/Marker" {
 	Properties {
 		_Color ("Color", Color) = (1,1,1,1)
 		_Transparency ("Transparency", Range(0, 1)) = 1
@@ -29,7 +31,7 @@
 			v2f vert(appdata_base input) {
 				v2f output;
 			
-				output.pos = mul(UNITY_MATRIX_MVP, input.vertex);		
+				output.pos = UnityObjectToClipPos(input.vertex);		
 			
 				return output;
 			}

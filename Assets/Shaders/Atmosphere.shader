@@ -1,4 +1,6 @@
-﻿Shader "Custom/Atmosphere" {
+﻿// Upgrade NOTE: replaced 'mul(UNITY_MATRIX_MVP,*)' with 'UnityObjectToClipPos(*)'
+
+Shader "Custom/Atmosphere" {
 	Properties {
 		_Color ("Color", Color) = (1,1,1,1)
 	}
@@ -27,7 +29,7 @@
 				v2f vert (appdata_base input) {
 					v2f output;
 
-					output.pos = mul(UNITY_MATRIX_MVP, input.vertex);
+					output.pos = UnityObjectToClipPos(input.vertex);
 					output.normal = mul((float3x3)unity_ObjectToWorld, input.normal);
 					output.worldvertpos = mul(unity_ObjectToWorld, input.vertex);
 
